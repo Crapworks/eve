@@ -17,7 +17,8 @@ Usage
  1. Clone me! ```git clone ```
  2. Configure logging here ```logging.json```
  3. Configure your inputs, output and formats here ```worker.json```
- 4. Give it a try and hope for the best! ```eve.py```
+ 4. Install requirements ```pip install -r requirements.txt```
+ 5. Give it a try and hope for the best! ```eve.py```
 
 Writing your own Plugin
 -----------------------
