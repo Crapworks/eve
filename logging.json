@@ -7,18 +7,22 @@
         }
     },
     "handlers": {
-        "default": {
+        "syslog": {
             "level": "DEBUG",
             "class": "logging.handlers.SysLogHandler",
             "facility": "daemon",
             "formatter": "syslog",
             "address": "/dev/log"
+        },
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler"
         }
     },
     "loggers": {
         "": {
             "level": "WARNING",
-            "handlers": ["default"],
+            "handlers": ["console", "syslog"],
             "propagate": true
         }
     }
