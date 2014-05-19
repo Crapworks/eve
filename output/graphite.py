@@ -43,9 +43,8 @@ class GraphiteOutput(Thread):
             try:
                 self.socket.send(metrics)
             except socket.error as err:
-                logger.warning('connection to graphite server lost: %s' % (str(err), ))
+                logger.warning('connection to graphite server lost: %s - retrying in 1 second' % (str(err), ))
                 sleep(1)
-                logger.warning('reconnecting to graphite server...')
                 self._setup_connection()
             except Exception as err:
                 logger.warning('error while processing event: %s' % (str(err), ))

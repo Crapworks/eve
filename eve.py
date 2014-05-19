@@ -58,7 +58,7 @@ class Configuration(dict):
             module = import_module('%s.%s' % (handlertype, name))
             for obj_name, obj in getmembers(module):
                 if isclass(obj) and getattr(obj, handlertype + '_name', None) == name:
-                    logger.debug('loaded %s module: %s' % (handlertype, name))
+                    logger.info('loaded %s module: %s' % (handlertype, name))
                     instances.append(obj(**self[handlertype][name]))
 
         return instances

@@ -8,31 +8,43 @@ import logging
 logger = logging.getLogger(__name__)
 
 from threading import Thread
+from time import sleep
+
 import redis
 
 
-# TODO: detect redis connection loss
 class RedisOutput(Thread):
     output_name = 'redis'
 
     def __init__(self, host, port, prefix=''):
         Thread.__init__(self)
         self.prefix = prefix
-        self.redis = redis.StrictRedis(host=host, port=port, db=0)
-        self.pipe = self.redis.pipeline()
+        self.host = host
+        self.port = port
+        self._setup_connection()
 
     def set_in_queue(self, queue):
         self._queue = queue
 
+    def _setup_connection(self):
+        self.redis = redis.StrictRedis(host=self.host, port=self.port, db=0)
+        self.pipe = self.redis.pipeline()
+
     def run(self):
         while True:
+            try:
+                self.redis.ping()
+            except redis.ConnectionError as err:
+                logger.warning('connection to redis server lost: %s - retrying in 1 second' % (str(err), ))
+                sleep(1)
+                self._setup_connection()
+                continue
+
             metrics = self._queue.get()
 
             for metric in metrics:
                 try:
                     key, value, group = metric
-                    #from msgpack import unpackb
-                    #print unpackb(value)
                     if self.prefix:
                         key = '.'.join([self.prefix, key])
                     self.pipe.append(key, value)
