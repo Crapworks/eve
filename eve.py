@@ -3,6 +3,7 @@
 
 import sys
 import json
+import argparse
 
 import logging.config
 try:
@@ -18,6 +19,10 @@ from inspect import isclass
 from importlib import import_module
 
 from multiprocessing import Process
+
+
+__version__ = '0.0.1'
+
 
 class CustomException(Exception):
     pass
@@ -69,7 +74,12 @@ class Configuration(dict):
 
 
 def main():
-    conf = Configuration('worker.json')
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-v", "--version", action="version", version=__version__)
+    parser.add_argument("-c", "--config", help="path to the configuration file", default="worker.json")
+    args = parser.parse_args()
+
+    conf = Configuration(args.config)
     input_modules = conf.get_input()
     output_modules = conf.get_output()
     format_modules = conf.get_format()
