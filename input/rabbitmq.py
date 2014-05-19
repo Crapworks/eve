@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 import json
+import socket
 
 import logging
 logger = logging.getLogger(__name__)
@@ -12,7 +13,7 @@ from Queue import Queue
 from pika import BlockingConnection
 from pika import ConnectionParameters
 from pika import PlainCredentials
-# from pika.exceptions import AMQPConnectionError
+from pika.exceptions import AMQPConnectionError
 
 class OutputThreads(object):
     def __init__(self, output_modules, format_modules, max_queue_size=1000):
@@ -33,6 +34,10 @@ class OutputThreads(object):
             queue.put(encoded)
 
 
+class EveConnectionError(Exception):
+    pass
+
+
 class RabbitInput(object):
     input_name = 'rabbitmq'
 
@@ -45,6 +50,7 @@ class RabbitInput(object):
     def _worker(self, ch, method, properties, body):
         # TODO: find out why rabbitmq sucks
         if not body:
+            logger.warning('empty message received from rabbitmq - skipping')
             ch.basic_ack(delivery_tag = method.delivery_tag)
             return 
 
@@ -62,22 +68,20 @@ class RabbitInput(object):
         finally:
             ch.basic_ack(delivery_tag = method.delivery_tag)
 
-    def setup_amqp_connection(self):
-        #try:
-        self.connection = BlockingConnection(self.connection_params)
-        self.channel = self.connection.channel()
+    def handle_input(self):
+        try:
+            self.connection = BlockingConnection(self.connection_params)
+            self.channel = self.connection.channel()
 
-        self.channel.queue_declare(queue=self.queue, durable=True)
-        self.channel.basic_qos(prefetch_count=self.prefetch)
-        self.channel.basic_consume(self._worker, queue=self.queue)
+            self.channel.queue_declare(queue=self.queue, durable=True)
+            self.channel.basic_qos(prefetch_count=self.prefetch)
+            self.channel.basic_consume(self._worker, queue=self.queue)
 
-        self.connection.channel()
-        #except Exception as err:
-        #logger.error('error connecting to rabbitmq server %r' % (err, ))
-        #sleep(1)
-        #logger.error('reconnecting to rabbitmq server')
+            self.connection.channel()
+            self.channel.start_consuming()
+        except (AMQPConnectionError, socket.error) as err:
+            raise EveConnectionError(err)
 
-        self.channel.start_consuming()
 
     def run(self, format_modules, output_modules):
         # Start output threads
@@ -85,4 +89,9 @@ class RabbitInput(object):
         self.output_modules = output_modules
         self.output_threads = OutputThreads(self.output_modules, self.format_modules)
         while True:
-            self.setup_amqp_connection()
+            try:
+                self.handle_input()
+            except EveConnectionError as err:
+                logger.error('connection error in input handler %s: %r - retrying in 1 second' % (self.input_name, err))
+                sleep(1)
+
