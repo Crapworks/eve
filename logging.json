@@ -1,0 +1,25 @@
+{
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+        "syslog": {
+            "format": "%(name)s[%(process)d]: %(levelname)s: %(message)s"
+        }
+    },
+    "handlers": {
+        "default": {
+            "level": "DEBUG",
+            "class": "logging.handlers.SysLogHandler",
+            "facility": "daemon",
+            "formatter": "syslog",
+            "address": "/dev/log"
+        }
+    },
+    "loggers": {
+        "": {
+            "level": "WARNING",
+            "handlers": ["default"],
+            "propagate": true
+        }
+    }
+}

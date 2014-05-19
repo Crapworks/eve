@@ -1,0 +1,43 @@
+{
+    "input": {
+        "rabbitmq": {
+            "host": "rabbitmq.server.net",
+            "port": 5672,
+            "username": "guest",
+            "password": "guest",
+            "queue": "collectd",
+            "prefetch": 100
+        }
+    },
+    "format": {
+        "collectd": {
+            "bind": [ "rabbitmq" ]
+        },
+        "graphite": {
+            "bind": [ "graphite" ],
+            "metric": "{host}.{plugin_combined}.{type_combined}.{dsname}",
+            "time": "{time}",
+            "value": "{value}",
+            "codec": "line"
+        },
+        "influxdb": {
+            "bind": [ "influxdb" ],
+            "metric": "{host}.{plugin_combined}.{type_combined}.{dsname}",
+            "time": "{time}",
+            "value": "{value}"
+        }
+    },
+    "output": {
+        "graphite": {
+            "host": "graphite.server.net",
+            "port": 2003
+        },
+        "influxdb": {
+            "host": "influxdb.server.net",
+            "port": 8086,
+            "username": "root",
+            "password": "root",
+            "database": "metrics"
+        }
+    }
+}
