@@ -3,3 +3,4 @@ pika>=0.9.5
 redis>=2.7.2
 bernhard>=0.1.0
 influxdb>=0.1.6
+hotqueue>=0.2.7
