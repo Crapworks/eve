@@ -18,10 +18,14 @@ class CollectdFormat(object):
         for key in self.keys:
             for metric in data:
                 if not key in metric.keys():
-                    logger.warning('this is not a collectd event')
+                    raise TypeError('not a collectd event')
 
     def decode(self, data):
-        self._identify(data)
+        try:
+            self._identify(data)
+        except:
+            logger.warning('this is not a collectd event - skipping')
+            return []
 
         result = []
 
@@ -31,6 +35,9 @@ class CollectdFormat(object):
                 tmp = deepcopy(metric)
                 for key in self.keys_list:
                     del tmp[key]
+
+                if item is None:
+                    item = 0
 
                 tmp['value'] = item
                 tmp['dstype'] = metric['dstypes'][num]
