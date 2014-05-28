@@ -45,10 +45,7 @@ class RedisInput(object):
     def handle_input(self):
         try:
             self.queue = HotQueue(self.queue, serializer=json, host=self.host, port=self.port, db=0)
-        except Exception as err:
-            raise EveConnectionError(err)
 
-        try:
             for data in self.queue.consume():
                 for fmt in self.format_modules:
                     if fmt.bind and self.input_name in fmt.bind:
