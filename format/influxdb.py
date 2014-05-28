@@ -7,11 +7,9 @@ logger = logging.getLogger(__name__)
 class InfluxDBFormat(object):
     format_name = 'influxdb'
 
-    def __init__(self, bind, metric, time, value):
+    def __init__(self, bind, series):
         self.bind = bind
-        self.metric = metric
-        self.time = time
-        self.value = value
+        self.series = series
 
     def _transform(self, metric):
         tmp = dict()
@@ -30,16 +28,11 @@ class InfluxDBFormat(object):
     def encode(self, data):
         return [
             {
-                'name': self.metric.format(**self._transform(item)),
-                'columns': [ 'time', 'value' ],
-                'points': [
-                    [
-                        int(float(self.time.format(**item))),
-                        float(self.value.format(**item))
-                    ],
-                ]
+                'name': self.series.format(**self._transform(item)),
+                'columns': item.keys(),
+                'points': [ item.values(),  ],
             } for item in data
         ]
 
     def decode(self, data):
-        raise AttributeError('graphite format for input processing is not yet implemented')
+        raise AttributeError('influx format for input processing is not yet implemented')

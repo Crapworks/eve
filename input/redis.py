@@ -48,12 +48,16 @@ class RedisInput(object):
         except Exception as err:
             raise EveConnectionError(err)
 
-        for data in self.queue.consume():
-            for fmt in self.format_modules:
-                if fmt.bind and self.input_name in fmt.bind:
-                    data = fmt.decode(data)
+        try:
+            for data in self.queue.consume():
+                for fmt in self.format_modules:
+                    if fmt.bind and self.input_name in fmt.bind:
+                        data = fmt.decode(data)
 
-            self.output_threads.write(data)
+                self.output_threads.write(data)
+        except Exception as err:
+            raise EveConnectionError(err)
+
 
     def run(self, format_modules, output_modules):
         # Start output threads
