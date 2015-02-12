@@ -1,43 +1,26 @@
 {
     "input": {
-        "rabbitmq": {
-            "host": "rabbitmq.server.net",
-            "port": 5672,
-            "username": "guest",
-            "password": "guest",
-            "queue": "collectd",
-            "prefetch": 100
+        "http": {
+            "port": 8080
         }
     },
     "format": {
         "collectd": {
-            "bind": [ "rabbitmq" ]
+            "bind": [ "http" ]
         },
-        "graphite": {
-            "bind": [ "graphite" ],
-            "metric": "{host}.{plugin_combined}.{type_combined}.{dsname}",
+        "riemann": {
+            "bind": [ "riemann" ],
+            "host": "{host}",
             "time": "{time}",
-            "value": "{value}",
-            "codec": "line"
-        },
-        "influxdb": {
-            "bind": [ "influxdb" ],
-            "metric": "{host}.{plugin_combined}.{type_combined}.{dsname}",
-            "time": "{time}",
-            "value": "{value}"
+            "service": "{plugin_combined}.{type_combined}",
+            "metric": "{value}",
+            "state": "warning",
+            "tags": [ "eve", "collectd" ]
         }
     },
     "output": {
-        "graphite": {
-            "host": "graphite.server.net",
-            "port": 2003
-        },
-        "influxdb": {
-            "host": "influxdb.server.net",
-            "port": 8086,
-            "username": "root",
-            "password": "root",
-            "database": "metrics"
+        "riemann": {
+            "host": "mtech-riemann01.infra.server.lan"
         }
     }
 }

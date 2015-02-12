@@ -12,6 +12,7 @@ class RiemannOutput(Thread):
     output_name = 'riemann'
 
     def __init__(self, host, port=5555, protocol='tcp'):
+        Thread.__init__(self)
         if protocol == 'tcp':
             transport=bernhard.TCPTransport
         elif protocol == 'udp':
@@ -27,8 +28,11 @@ class RiemannOutput(Thread):
     def run(self):
         while True:
             metrics = self._queue.get()
-
             try:
-                self.client.send(metrics)
+                if isinstance(metrics, list):
+                    for item in metrics:
+                        self.client.send(item)
+                else:
+                    self.client.send(metrics)
             except Exception as err:
                 logger.warning('error while processing event: %s' % (str(err), ))

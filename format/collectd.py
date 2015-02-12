@@ -23,7 +23,7 @@ class CollectdFormat(object):
     def decode(self, data):
         try:
             self._identify(data)
-        except:
+        except TypeError:
             logger.warning('this is not a collectd event - skipping')
             return []
 
